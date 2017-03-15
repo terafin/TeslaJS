@@ -1,5 +1,29 @@
 # TeslaJS Change log
 
+## v2.1.22
+* addressed #71 enhancing error handling
+
+## v2.1.21
+* more test coverage
+* added global consts to docs
+
+## v2.1.20
+* expanded docs
+
+## v2.1.19
+* added header advertising of gzip #69
+
+## v2.1.18
+* moved commander to devDependency, still used by samples
+* added more jsdocs tagging
+
+## v2.1.17
+* removed old model id code from sampleFramework now using `getModel()`
+
+## v2.1.16
+* added test case for `startStreaming()`
+* fixed incorrect login failure test case
+
 ## v2.1.15
 * added dependency checking badge to README
 * updated depdendencies

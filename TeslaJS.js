@@ -19,7 +19,10 @@ var Promise = require('promise');
 //=======================
 // Streaming API portal
 //=======================
-/** @global */
+/** 
+ * @global 
+ * @default
+ */
 var streamingPortal = "https://streaming.vn.teslamotors.com/stream";
 exports.streamingPortal = streamingPortal;
 
@@ -28,7 +31,10 @@ var streamingBaseURI = process.env.TESLAJS_STREAMING || streamingPortal;
 //===========================
 // New OAuth-based API portal
 //===========================
-/** @global */
+/**   
+ * @global   
+ * @default  
+ */
 var portal = "https://owner-api.teslamotors.com";
 exports.portal = portal;
 
@@ -37,27 +43,59 @@ var portalBaseURI = process.env.TESLAJS_SERVER || portal;
 //=======================
 // Log levels
 //=======================
+/**   
+ * @global   
+ * @default  
+ */
 var API_LOG_ALWAYS = 0;
 exports.API_LOG_ALWAYS = API_LOG_ALWAYS;
 
+/**   
+ * @global   
+ * @default  
+ */
 var API_ERR_LEVEL = 1;
 exports.API_ERR_LEVEL = API_ERR_LEVEL;
 
+/**   
+ * @global   
+ * @default  
+ */
 var API_CALL_LEVEL = 2;
 exports.API_CALL_LEVEL = API_CALL_LEVEL;
 
+/**   
+ * @global   
+ * @default  
+ */
 var API_RETURN_LEVEL = 3;
 exports.API_RETURN_LEVEL = API_RETURN_LEVEL;
 
+/**   
+ * @global   
+ * @default  
+ */
 var API_BODY_LEVEL = 4;
 exports.API_BODY_LEVEL = API_BODY_LEVEL;
 
+/**   
+ * @global   
+ * @default  
+ */
 var API_REQUEST_LEVEL = 5;
 exports.API_REQUEST_LEVEL = API_REQUEST_LEVEL;
 
+/**   
+ * @global   
+ * @default  
+ */
 var API_RESPONSE_LEVEL = 6;
 exports.API_RESPONSE_LEVEL = API_RESPONSE_LEVEL;
 
+/**   
+ * @global   
+ * @default  
+ */
 var API_LOG_ALL = 255;	// this value must be the last
 exports.API_LOG_ALL = API_LOG_ALL;
 
@@ -88,6 +126,7 @@ function log(level, str) {
     if (logLevel < level) {
         return;
     }
+//    console.log("[" + new Date().toISOString() + "] " + str);
     console.log(str);
 }
 
@@ -116,7 +155,7 @@ exports.setLogLevel = function setLogLevel(level) {
 
 /**
  * Get the current logging level
- * @return {int} level - current logging level
+ * @return {int} the current logging level
  */
 exports.getLogLevel = function getLogLevel() {
     return logLevel;
@@ -136,7 +175,7 @@ exports.setPortalBaseURI = function setPortalBaseURI(uri) {
 
 /**
  * Get the portal base URI
- * @return {string} uri - URI for Tesla servers
+ * @return {string} URI for Tesla servers
  */
 exports.getPortalBaseURI = function getPortalBaseURI() {
     return portalBaseURI;
@@ -156,7 +195,7 @@ exports.setStreamingBaseURI = function setStreamingBaseURI(uri) {
 
 /**
  * Get the streaming base URI
- * @return {string} uri - URI for Tesla streaming servers
+ * @return {string} URI for Tesla streaming servers
  */
 exports.getStreamingBaseURI = function getStreamingBaseURI() {
     return streamingBaseURI;
@@ -165,7 +204,7 @@ exports.getStreamingBaseURI = function getStreamingBaseURI() {
 /**
  * Return the car model from vehicle JSON information
  * @param {object} vehicle - vehicle JSON
- * @return {string} model - vehicle model string
+ * @return {string} vehicle model string
  */
 exports.getModel = function getModel(vehicle) {
     var carType = "Unknown";
@@ -182,7 +221,7 @@ exports.getModel = function getModel(vehicle) {
 /**
  * Return the paint color from vehicle JSON information
  * @param {object} vehicle - vehicle JSON
- * @return {string} color - vehicle paint color
+ * @return {string} the vehicle paint color
  */
 exports.getPaintColor = function getPaintColor(vehicle) {
     var colors = {
@@ -213,7 +252,7 @@ exports.getPaintColor = function getPaintColor(vehicle) {
  * @param {string} username - Tesla.com username
  * @param {string} password - Tesla.com password
  * @param {nodeBack} callback - Node-style callback
- * @returns {object} result - {response, body, authToken}
+ * @returns {object} {response, body, authToken}
  */
 exports.login = function login(username, password, callback) {
     log(API_CALL_LEVEL, "TeslaJS.login()");
@@ -228,6 +267,7 @@ exports.login = function login(username, password, callback) {
     var req = {
         method: 'POST',
         url: portalBaseURI + '/oauth/token',
+        gzip: true,
         form: {
             "grant_type": "password",
             "client_id": c_id,
@@ -263,7 +303,7 @@ exports.login = function login(username, password, callback) {
  * @function loginAsync
  * @param {string} username - Tesla.com username
  * @param {string} password - Tesla.com password
- * @returns {Promise} result - {response, body, authToken}
+ * @returns {Promise} {response, body, authToken}
  */
 exports.loginAsync = Promise.denodeify(exports.login);
 
@@ -307,7 +347,7 @@ exports.logoutAsync = Promise.denodeify(exports.logout);
  * Return vehicle information on the requested vehicle
  * @param {optionsType} options - options object
  * @param {nodeBack} callback - Node-style callback
- * @returns {Vehicle} - vehicle JSON data
+ * @returns {Vehicle} vehicle JSON data
  */
 exports.vehicles = function vehicles(options, callback) {
     log(API_CALL_LEVEL, "TeslaJS.vehicles()");
@@ -316,6 +356,7 @@ exports.vehicles = function vehicles(options, callback) {
 
     var req = {
         method: 'GET',
+        gzip: true,
         url: portalBaseURI + '/api/1/vehicles',
         headers: { Authorization: "Bearer " + options.authToken, 'Content-Type': 'application/json; charset=utf-8' }
     };
@@ -325,6 +366,11 @@ exports.vehicles = function vehicles(options, callback) {
     request(req, function (error, response, body) {
         if (error) {
             log(API_ERR_LEVEL, error);
+            return callback(error, null);
+        }
+
+        if (response.statusCode != 200) {
+            return callback(response.statusMessage, null);
         }
 
         log(API_BODY_LEVEL, "\nBody: " + JSON.stringify(body));
@@ -338,7 +384,7 @@ exports.vehicles = function vehicles(options, callback) {
             data.id = data.id_s;
             options.vehicleID = data.id;
             
-            callback(error, data);
+            callback(null, data);
         } catch (e) {
             log(API_ERR_LEVEL, 'Error parsing vehicles response');
             callback(e, null);
@@ -353,7 +399,7 @@ exports.vehicles = function vehicles(options, callback) {
  * @function vehicle
  * @param {optionsType} options - options object
  * @param {nodeBack} callback - Node-style callback
- * @returns {Vehicle} - vehicle JSON data
+ * @returns {Vehicle} vehicle JSON data
  */
 exports.vehicle = exports.vehicles;
 
@@ -361,7 +407,7 @@ exports.vehicle = exports.vehicles;
  * Return vehicle information on the requested vehicle
  * @function vehicleAsync
  * @param {optionsType} options - options object
- * @returns {Promise} - vehicle JSON data
+ * @returns {Promise} vehicle JSON data
  */
 exports.vehicleAsync = Promise.denodeify(exports.vehicles);
 
@@ -369,7 +415,7 @@ exports.vehicleAsync = Promise.denodeify(exports.vehicles);
  * Return vehicle information on the requested vehicle
  * @function vehiclesAsync
  * @param {optionsType} options - options object
- * @returns {Promise} - vehicle JSON data
+ * @returns {Promise} vehicle JSON data
  */
 exports.vehiclesAsync = Promise.denodeify(exports.vehicles);
 
@@ -377,7 +423,7 @@ exports.vehiclesAsync = Promise.denodeify(exports.vehicles);
  * Return vehicle information on ALL vehicles
  * @param {optionsType} options - options object
  * @param {nodeBack} callback - Node-style callback
- * @returns {Vehicles[]} - array of vehicle JSON data
+ * @returns {Vehicles[]} array of vehicle JSON data
  */
 exports.allVehicles = function allVehicles(options, callback) {
     log(API_CALL_LEVEL, "TeslaJS.allVehicles()");
@@ -386,6 +432,7 @@ exports.allVehicles = function allVehicles(options, callback) {
 
     var req = {
         method: 'GET',
+        gzip: true,
         url: portalBaseURI + '/api/1/vehicles',
         headers: { Authorization: "Bearer " + options.authToken, 'Content-Type': 'application/json; charset=utf-8' }
     };
@@ -395,6 +442,11 @@ exports.allVehicles = function allVehicles(options, callback) {
     request(req, function (error, response, body) {
         if (error) {
             log(API_ERR_LEVEL, error);
+            return callback(error, null);
+        }
+
+        if (response.statusCode != 200) {
+            return callback(response.statusMessage, null);
         }
 
         log(API_BODY_LEVEL, "\nBody: " + JSON.stringify(body));
@@ -406,7 +458,7 @@ exports.allVehicles = function allVehicles(options, callback) {
             data = JSON.parse(body);
             data = data.response;
             
-            callback(error, data);
+            callback(null, data);
         } catch (e) {
             log(API_ERR_LEVEL, 'Error parsing vehicles response');
             callback(e, null);
@@ -421,7 +473,7 @@ exports.allVehicles = function allVehicles(options, callback) {
  * @function allVehiclesAsync
  * @param {optionsType} options - options object
  * @param {nodeBack} callback - Node-style callback
- * @returns {Promise} - array of vehicle JSON data
+ * @returns {Promise} array of vehicle JSON data
  */
 exports.allVehiclesAsync = Promise.denodeify(exports.allVehicles);
 
@@ -440,6 +492,7 @@ function get_command(options, command, callback) {
 
     var req = {
         method: "GET",
+        gzip: true,
         url: portalBaseURI + "/api/1/vehicles/" + options.vehicleID + "/" + command,
         headers: { Authorization: "Bearer " + options.authToken, 'Content-Type': 'application/json; charset=utf-8'}
     };
@@ -449,6 +502,11 @@ function get_command(options, command, callback) {
     request(req, function (error, response, body) {
         if (error) {
             log(API_ERR_LEVEL, error);
+            return callback(error, null);
+        }
+
+        if (response.statusCode != 200) {
+            return callback(response.statusMessage, null);
         }
 
         log(API_BODY_LEVEL, "\nBody: " + JSON.stringify(body));
@@ -460,7 +518,7 @@ function get_command(options, command, callback) {
             data = JSON.parse(body);
             data = data.response;
 
-            callback(error, data);
+            callback(null, data);
         } catch (e) {
             log(API_ERR_LEVEL, 'Error parsing GET call response');
             callback(e, null);
@@ -475,7 +533,7 @@ function get_command(options, command, callback) {
  * @function get_commandAsync
  * @param {optionsType} options - options object
  * @param {string} command - REST command
- * @returns {Promise} - result
+ * @returns {Promise} result
  */
 exports.get_commandAsync = Promise.denodeify(exports.get_command);
 
@@ -496,6 +554,7 @@ function post_command(options, command, body, callback) {
     var cmd = {
         method: "POST",
         url: portalBaseURI + "/api/1/vehicles/" + options.vehicleID + "/" + command,
+        gzip: true,
         headers: { Authorization: "Bearer " + options.authToken, 'content-type': 'application/json; charset=UTF-8' },
         form: body || null
     };
@@ -505,6 +564,11 @@ function post_command(options, command, body, callback) {
     request(cmd, function (error, response, body) {
         if (error) {
             log(API_ERR_LEVEL, error);
+            return callback(error, null);
+        }
+
+        if (response.statusCode != 200) {
+            return callback(response.statusMessage, null);
         }
 
         log(API_BODY_LEVEL, "\nBody: " + JSON.stringify(body));
@@ -516,7 +580,7 @@ function post_command(options, command, body, callback) {
             data = JSON.parse(body);
             data = data.response;
 
-            callback(error, data);
+            callback(null, data);
         } catch (e) {
             log(API_ERR_LEVEL, 'Error parsing POST call response');
             callback(e, null);
@@ -532,7 +596,7 @@ function post_command(options, command, body, callback) {
  * @param {optionsType} options - options object
  * @param {string} command - REST command
  * @param {object} body - JSON payload
- * @returns {Promise} - result
+ * @returns {Promise} result
  */
 exports.post_commandAsync = Promise.denodeify(exports.post_command);
 
@@ -540,66 +604,102 @@ exports.post_commandAsync = Promise.denodeify(exports.post_command);
  * GET the vehicle state
  * @param {optionsType} options - options object
  * @param {nodeBack} callback - Node-style callback
- * @returns {object} vehicle_state
+ * @returns {object} vehicle_state object
  */
 exports.vehicleState = function vehicleState(options, callback) {
     get_command(options, "data_request/vehicle_state", callback);
 }
+
+/**
+ * @function vehicleStateAsync
+ * @param {optionsType} options - options object
+ * @returns {Promise} vehicle_state object
+ */
 exports.vehicleStateAsync = Promise.denodeify(exports.vehicleState);
 
 /**
  * GET the climate state
  * @param {optionsType} options - options object
  * @param {nodeBack} callback - Node-style callback
- * @returns {object} climate_state
+ * @returns {object} climate_state object
  */
 exports.climateState = function climateState(options, callback) {
     get_command(options, "data_request/climate_state", callback);
 }
+
+/**
+ * @function climateStateAsync
+ * @param {optionsType} options - options object
+ * @returns {Promise} climate_state object
+ */
 exports.climateStateAsync = Promise.denodeify(exports.climateState);
 
 /**
  * GET the drive state
  * @param {optionsType} options - options object
  * @param {nodeBack} callback - Node-style callback
- * @returns {object} drive_state
+ * @returns {object} drive_state object
  */
 exports.driveState = function driveState(options, callback) {
     get_command(options, "data_request/drive_state", callback);
 }
+
+/**
+ * @function driveStateAsync
+ * @param {optionsType} options - options object
+ * @returns {Promise} drive_state object
+ */
 exports.driveStateAsync = Promise.denodeify(exports.driveState);
 
 /**
  * GET the charge state
  * @param {optionsType} options - options object
  * @param {nodeBack} callback - Node-style callback
- * @returns {object} charge_state
+ * @returns {object} charge_state object
  */
 exports.chargeState = function chargeState(options, callback) {
     get_command(options, "data_request/charge_state", callback);
 }
+
+/**
+ * @function chargeStateAsync
+ * @param {optionsType} options - options object
+ * @returns {Promise} charge_state object
+ */
 exports.chargeStateAsync = Promise.denodeify(exports.chargeState);
 
 /**
  * GET the GUI settings
  * @param {optionsType} options - options object
  * @param {nodeBack} callback - Node-style callback
- * @returns {object} gui_settings
+ * @returns {object} gui_settings object
  */
 exports.guiSettings = function guiSettings(options, callback) {
     get_command(options, "data_request/gui_settings", callback);
 }
+
+/**
+ * @function guiSettingsAsync
+ * @param {optionsType} options - options object
+ * @returns {Promise} gui_settings object
+ */
 exports.guiSettingsAsync = Promise.denodeify(exports.guiSettings);
 
 /**
  * GET the mobile enabled status
  * @param {optionsType} options - options object
  * @param {nodeBack} callback - Node-style callback
- * @returns {object} mobile_enabled
+ * @returns {object} mobile_enabled object
  */
 exports.mobileEnabled = function mobileEnabled(options, callback) {
     get_command(options, "mobile_enabled", callback);
 }
+
+/**
+ * @function mobileEnabledAsync
+ * @param {optionsType} options - options object
+ * @returns {Promise} mobile_enabled object
+ */
 exports.mobileEnabledAsync = Promise.denodeify(exports.mobileEnabled);
 
 /**
@@ -611,6 +711,12 @@ exports.mobileEnabledAsync = Promise.denodeify(exports.mobileEnabled);
 exports.honkHorn = function honk(options, callback) {
     post_command(options, "command/honk_horn", null, callback);
 }
+
+/**
+ * @function honkHornAsync
+ * @param {optionsType} options - options object
+ * @returns {Promise} result
+ */
 exports.honkHornAsync = Promise.denodeify(exports.honkHorn);
 
 /**
@@ -622,6 +728,12 @@ exports.honkHornAsync = Promise.denodeify(exports.honkHorn);
 exports.flashLights = function flashLights(options, callback) {
     post_command(options, "command/flash_lights", null, callback);
 }
+
+/**
+ * @function flashLightsAsync
+ * @param {optionsType} options - options object
+ * @returns {Promise} result
+ */
 exports.flashLightsAsync = Promise.denodeify(exports.flashLights);
 
 /**
@@ -633,6 +745,13 @@ exports.flashLightsAsync = Promise.denodeify(exports.flashLights);
 exports.startCharge = function startCharge(options, callback) {
     post_command(options, "command/charge_start", null, callback);
 }
+
+/**
+ * Start charging the car
+ * @function startChargeAsync
+ * @param {optionsType} options - options object
+ * @returns {Promise} result
+ */
 exports.startChargeAsync = Promise.denodeify(exports.startCharge);
 
 /**
@@ -644,6 +763,13 @@ exports.startChargeAsync = Promise.denodeify(exports.startCharge);
 exports.stopCharge = function stopCharge(options, callback) {
     post_command(options, "command/charge_stop", null, callback);
 }
+
+/**
+ * Stop charging the car
+ * @function stopChargeAsync
+ * @param {optionsType} options - options object
+ * @returns {Promise} result
+ */
 exports.stopChargeAsync = Promise.denodeify(exports.stopCharge);
 
 /**
@@ -655,6 +781,13 @@ exports.stopChargeAsync = Promise.denodeify(exports.stopCharge);
 exports.openChargePort = function openChargePort(options, callback) {
     post_command(options, "command/charge_port_door_open", null, callback);
 }
+
+/**
+ * Open the charge port
+ * @function openChargePortAsync
+ * @param {optionsType} options - options object
+ * @returns {Promise} result
+ */
 exports.openChargePortAsync = Promise.denodeify(exports.openChargePort);
 
 /**
@@ -666,22 +799,41 @@ exports.openChargePortAsync = Promise.denodeify(exports.openChargePort);
 exports.closeChargePort = function closeChargePort(options, callback) {
     post_command(options, "command/charge_port_door_close", null, callback);
 }
+
+/**
+ * Close the charge port
+ * @function closeChargePortAsync
+ * @param {optionsType} options - options object
+ * @returns {Promise} result
+ */
 exports.closeChargePortAsync = Promise.denodeify(exports.closeChargePort);
 
 //=====================
 // Charge limit constants
 //=====================
-/** @global */
+/**   
+ * @global   
+ * @default  
+ */
 exports.CHARGE_STORAGE  = 50;
-/** @global */
+/**   
+ * @global   
+ * @default  
+ */
 exports.CHARGE_DAILY    = 70;
-/** @global */
+/**   
+ * @global   
+ * @default  
+ */
 exports.CHARGE_STANDARD = 90;
-/** @global */
+/**   
+ * @global   
+ * @default  
+ */
 exports.CHARGE_RANGE    = 100;
 
 /**
- * Set the charge limit
+ * Set the charge limit.
  * Note: charging to 100% frequently is NOT recommended for long-term battery health!
  * @param {optionsType} options - options object
  * @param {int} amt - charge limit in percent
@@ -692,10 +844,19 @@ exports.setChargeLimit = function setChargeLimit(options, amt, callback) {
     amt = clamp(amt, exports.CHARGE_STANDARD, exports.CHARGE_RANGE);
     post_command(options, "command/set_charge_limit", { percent: amt }, callback);
 }
+
+/**
+ * Set the charge limit async and return Promise.
+ * Note: charging to 100% frequently is NOT recommended for long-term battery health!
+ * @function setChargeLimitAsync
+ * @param {optionsType} options - options object
+ * @param {int} amt - charge limit in percent
+ * @returns {Promise} result
+ */
 exports.setChargeLimitAsync = Promise.denodeify(exports.setChargeLimit);
 
 /**
- * Set charge limit to 90%
+ * Set the charge limit to (standard) 90%
  * @param {optionsType} options - options object
  * @param {nodeBack} callback - Node-style callback
  * @returns {object} result
@@ -703,6 +864,12 @@ exports.setChargeLimitAsync = Promise.denodeify(exports.setChargeLimit);
 exports.chargeStandard = function chargeStandard(options, callback) {
     post_command(options, "command/charge_standard", null, callback);
 }
+
+/**
+ * @function chargeStandardAsync
+ * @param {optionsType} options - options object
+ * @returns {Promise} result
+ */
 exports.chargeStandardAsync = Promise.denodeify(exports.chargeStandard);
 
 /**
@@ -714,6 +881,12 @@ exports.chargeStandardAsync = Promise.denodeify(exports.chargeStandard);
 exports.chargeMaxRange = function chargeMaxRange(options, callback) {
     post_command(options, "command/charge_max_range", null, callback);
 }
+
+/**
+ * @function chargeMaxRangeAsync
+ * @param {optionsType} options - options object
+ * @returns {Promise} result
+ */
 exports.chargeMaxRangeAsync = Promise.denodeify(exports.chargeMaxRange);
 
 /**
@@ -725,6 +898,12 @@ exports.chargeMaxRangeAsync = Promise.denodeify(exports.chargeMaxRange);
 exports.doorLock = function doorLock(options, callback) {
     post_command(options, "command/door_lock", null, callback);
 }
+
+/**
+ * @function doorLockAsync
+ * @param {optionsType} options - options object
+ * @returns {Promise} result
+ */
 exports.doorLockAsync = Promise.denodeify(exports.doorLock);
 
 /**
@@ -736,6 +915,12 @@ exports.doorLockAsync = Promise.denodeify(exports.doorLock);
 exports.doorUnlock = function doorUnlock(options, callback) {
     post_command(options, "command/door_unlock", null, callback);
 }
+
+/**
+ * @function doorUnlockAsync
+ * @param {optionsType} options - options object
+ * @returns {Promise} result
+ */
 exports.doorUnlockAsync = Promise.denodeify(exports.doorUnlock);
 
 /**
@@ -747,6 +932,12 @@ exports.doorUnlockAsync = Promise.denodeify(exports.doorUnlock);
 exports.climateStart = function climateStart(options, callback) {
     post_command(options, "command/auto_conditioning_start", null, callback);
 }
+
+/**
+ * @function climateStartAsync
+ * @param {optionsType} options - options object
+ * @returns {Promise} result
+ */
 exports.climateStartAsync = Promise.denodeify(exports.climateStart);
 
 /**
@@ -758,14 +949,36 @@ exports.climateStartAsync = Promise.denodeify(exports.climateStart);
 exports.climateStop = function climateStop(options, callback) {
     post_command(options, "command/auto_conditioning_stop", null, callback);
 }
+
+/**
+ * @function climateStopAsync
+ * @param {optionsType} options - options object
+ * @returns {Promise} result
+ */
 exports.climateStopAsync = Promise.denodeify(exports.climateStop);
 
 //==================================
 // Set the sun roof to specific mode
 //==================================
+/**   
+ * @global   
+ * @default  
+ */
 exports.SUNROOF_OPEN = "open";
+/**   
+ * @global   
+ * @default  
+ */
 exports.SUNROOF_VENT = "vent";
+/**   
+ * @global   
+ * @default  
+ */
 exports.SUNROOF_CLOSED = "close";
+/**   
+ * @global   
+ * @default  
+ */
 exports.SUNROOF_COMFORT = "comfort";
 
 /**
@@ -778,6 +991,13 @@ exports.SUNROOF_COMFORT = "comfort";
 exports.sunRoofControl = function sunRoofControl(options, state, callback) {
     post_command(options, "command/sun_roof_control", { "state": state }, callback);
 }
+
+/**
+ * @function sunRoofControlAsync
+ * @param {optionsType} options - options object
+ * @param {string} state - one of "open", "vent", "close", "comfort"
+ * @returns {Promise} result
+ */
 exports.sunRoofControlAsync = Promise.denodeify(exports.sunRoofControl);
 
 /**
@@ -790,12 +1010,28 @@ exports.sunRoofControlAsync = Promise.denodeify(exports.sunRoofControl);
 exports.sunRoofMove = function sunRoofMove(options, percent, callback) {
     post_command(options, "command/sun_roof_control", { "state": "move", "percent": percent }, callback);
 }
+
+/**
+ * @function sunRoofMoveAsync
+ * @param {optionsType} options - options object
+ * @param {int} percent - position in percent
+ * @returns {Promise} result
+ */
 exports.sunRoofMoveAsync = Promise.denodeify(exports.sunRoofMove);
 
 //==============================================
 // Temperature Limits
 //==============================================
+
+/**   
+ * @global   
+ * @default  
+ */
 exports.MIN_TEMP = 15.5;    // 60 Deg.F
+/**   
+ * @global   
+ * @default  
+ */
 exports.MAX_TEMP = 26.7;    // 80 Deg.F
 
 /**
@@ -811,11 +1047,20 @@ exports.setTemps = function setTemps(options, driver, pass, callback) {
         pass = driver;
     }
 
+    // ensure valid temp range
     driver = clamp(driver, exports.MIN_TEMP, exports.MAX_TEMP);
     pass = clamp(pass, exports.MIN_TEMP, exports.MAX_TEMP);
 
     post_command(options, "command/set_temps", { driver_temp: driver, passenger_temp: pass }, callback);
 }
+
+/**
+ * @function setTempsAsync
+ * @param {optionsType} options - options object
+ * @param {number} driver - driver temp in Deg.C
+ * @param {number} pass - passenger temp in Deg.C
+ * @returns {Promise} result
+ */
 exports.setTempsAsync = Promise.denodeify(exports.setTemps);
 
 /**
@@ -828,12 +1073,28 @@ exports.setTempsAsync = Promise.denodeify(exports.setTemps);
 exports.remoteStart = function remoteStartDrive(options, password, callback) {
     post_command(options, "command/remote_start_drive", { "password": password }, callback);
 }
+
+/**
+ * @function remoteStartAsync
+ * @param {optionsType} options - options object
+ * @param {string} password - Tesla.com password
+ * @returns {Promise} result
+ */
 exports.remoteStartAsync = Promise.denodeify(exports.remoteStart);
 
 //=====================
 // Truns/Frunk constants
 //=====================
+
+/**   
+ * @global   
+ * @default  
+ */
 exports.FRUNK = "frunk";
+/**   
+ * @global   
+ * @default  
+ */
 exports.TRUNK = "trunk";
 
 /**
@@ -846,6 +1107,13 @@ exports.TRUNK = "trunk";
 exports.openTrunk = function openTrunk(options, which, callback) {
     post_command(options, "command/trunk_open", { which_trunk: which }, callback);
 }
+
+/**
+ * @function openTrunkAsync
+ * @param {optionsType} options - options object
+ * @param {string} which - one of "trunk", "frunk"
+ * @returns {Promise} result
+ */
 exports.openTrunkAsync = Promise.denodeify(exports.openTrunk);
 
 /**
@@ -857,6 +1125,12 @@ exports.openTrunkAsync = Promise.denodeify(exports.openTrunk);
 exports.wakeUp = function wakeUp(options, callback) {
     post_command(options, "wake_up", null, callback);
 }
+
+/**
+ * @function wakeUpAsync
+ * @param {optionsType} options - options object
+ * @returns {Promise} result
+ */
 exports.wakeUpAsync = Promise.denodeify(exports.wakeUp);
 
 /**
@@ -870,6 +1144,14 @@ exports.wakeUpAsync = Promise.denodeify(exports.wakeUp);
 exports.setValetMode = function setValetMode(options, onoff, pin, callback) {
     post_command(options, "command/set_valet_mode", { on : onoff, password : pin }, callback);
 }
+
+/**
+ * @function setValetModeAsync
+ * @param {optionsType} options - options object
+ * @param {boolean} onoff - true for on, false for off
+ * @param {int} pin - pin code
+ * @returns {Promise} result
+ */
 exports.setValetModeAsync = Promise.denodeify(exports.setValetMode);
 
 /**
@@ -881,6 +1163,12 @@ exports.setValetModeAsync = Promise.denodeify(exports.setValetMode);
 exports.resetValetPin = function resetValetPin(options, callback) {
     post_command(options, "command/reset_valet_pin", null, callback);
 }
+
+/**
+ * @function resetValetPinAsync
+ * @param {optionsType} options - options object
+ * @returns {Promise} result
+ */
 exports.resetValetPinAsync = Promise.denodeify(exports.resetValetPin);
 
 /**
@@ -893,6 +1181,13 @@ exports.resetValetPinAsync = Promise.denodeify(exports.resetValetPin);
 exports.calendar = function calendar(options, entry, callback) {
     post_command(options, "command/upcoming_calendar_entries", entry, callback);
 }
+
+/**
+ * @function calendarAsync
+ * @param {optionsType} options - options object
+ * @param {object} entry - calendar entry object
+ * @returns {Promise} result
+ */
 exports.calendarAsync = Promise.denodeify(exports.calendar);
 
 /**
@@ -948,6 +1243,15 @@ exports.makeCalendarEntry = function makeCalendarEntry(eventName, location, star
 exports.homelink = function homelink(options, lat, long, token, callback) {
     post_command(options, "command/trigger_homelink", { lat: lat, long: long, token: token } , callback);
 }
+
+/**
+ * @function homelinkAsync
+ * @param {optionsType} options - options object
+ * @param {number} lat - vehicle GPS latitude
+ * @param {number} long - vehicle GPS longitude
+ * @param {string} string - one of the tokens from vehicle JSON
+ * @returns {Promise} result
+ */
 exports.homelinkAsync = Promise.denodeify(exports.homelink);
 
 /*
@@ -1000,7 +1304,10 @@ exports.autoPark = function autoPark(options, lat, long, action, callback) {
 //=================================
 // Available streaming data options
 //=================================
-/** @global */
+/**   
+ * @global   
+ * @default  
+ */
 exports.streamingColumns = ['elevation', 'est_heading', 'est_lat', 'est_lng', 'est_range', 'heading', 'odometer', 'power', 'range', 'shift_state', 'speed', 'soc'];
 
 /**
@@ -1019,6 +1326,7 @@ exports.startStreaming = function startStreaming(options, callback) {
     var req = {
         method: 'GET',
         url: streamingBaseURI + "/" + options.vehicle_id + '/?values=' + options.values.join(','),
+        gzip: true,
         auth:
         {
             username: options.username,
