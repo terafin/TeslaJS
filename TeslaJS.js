@@ -248,6 +248,32 @@ exports.getPaintColor = function getPaintColor(vehicle) {
 }
 
 /**
+ * Return the vehicle VIN from vehicle JSON information
+ * @param {object} vehicle - vehicle JSON
+ * @return {string} the vehicle VIN
+ */
+exports.getVin = function getVin(vehicle) {
+    if (!vehicle || !vehicle.vin) {
+        throw new Error("invalid parameter");
+    }
+
+    return vehicle.vin;
+}
+
+/**
+ * Return the vehicle VIN from vehicle JSON information
+ * @param {object} vehicle - vehicle JSON
+ * @return {string} the short version of the vehicle VIN
+ */
+exports.getShortVin = function getShortVin(vehicle) {
+    if (!vehicle || !vehicle.vin) {
+        throw new Error("invalid parameter");
+    }
+
+    return vehicle.vin.substr(11);
+}
+
+/**
  * Login to the server and receive an OAuth token
  * @param {string} username - Tesla.com username
  * @param {string} password - Tesla.com password
@@ -317,22 +343,16 @@ exports.logout = function logout(authToken, callback) {
 
     callback = callback || function (err, result) { /* do nothing! */ }
 
-    callback(null, { error: "Not implemented!", response: "Not implemented!", body: "Not implemented!" });
-
-    log(API_RETURN_LEVEL, "TeslaJS.logout() completed.");
-
-/*
     request({
-        method: 'DELETE',
-        url: portalBaseURI + 'logout',
+        method: 'POST',
+        url: portalBaseURI + '/oauth/revoke',
         headers: { Authorization: "Bearer " + authToken, 'Content-Type': 'application/json; charset=utf-8' }
     }, function (error, response, body) {
 
-        callback({ error: error, response: response, body: body });
+        callback(error, { error: error, response: response, body: body });
 
         log(API_RETURN_LEVEL, "TeslaJS.logout() completed.");
     });
-*/
 }
 
 /**
@@ -506,7 +526,9 @@ function get_command(options, command, callback) {
         }
 
         if (response.statusCode != 200) {
-            return callback(response.statusMessage, null);
+            var str = "Error response: " + response.statusCode;
+            log(API_ERR_LEVEL, str);
+            return callback(str, null);
         }
 
         log(API_BODY_LEVEL, "\nBody: " + JSON.stringify(body));
@@ -568,7 +590,9 @@ function post_command(options, command, body, callback) {
         }
 
         if (response.statusCode != 200) {
-            return callback(response.statusMessage, null);
+            var str = "Error response: " + response.statusCode;
+            log(API_ERR_LEVEL, str);
+            return callback(str, null);
         }
 
         log(API_BODY_LEVEL, "\nBody: " + JSON.stringify(body));
@@ -1027,12 +1051,12 @@ exports.sunRoofMoveAsync = Promise.denodeify(exports.sunRoofMove);
  * @global   
  * @default  
  */
-exports.MIN_TEMP = 15.5;    // 60 Deg.F
+exports.MIN_TEMP = 15;    // 59 Deg.F
 /**   
  * @global   
  * @default  
  */
-exports.MAX_TEMP = 26.7;    // 80 Deg.F
+exports.MAX_TEMP = 28;    // 82.4 Deg.F
 
 /**
  * Set the driver/passenger climate temperatures

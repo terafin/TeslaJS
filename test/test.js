@@ -16,8 +16,8 @@ function failure(msg) {
 }
 
 describe('TeslaJS', function () {
-    var options = {authToken: "abc123", vehicleID: "1234", vehicle_id: "1", username: user, password: pass};
-    this.timeout(5000);
+	var options = {authToken: "abc123", vehicleID: "1234", vehicle_id: "1", token: "1", username: user, password: pass};
+    this.timeout(7500);
 
     describe('#getStreamingBaseURI()', function () {
         it('should return current streaming URI', function () {
@@ -132,6 +132,42 @@ describe('TeslaJS', function () {
         });
     });
 
+    describe('#getVin()', function () {
+        it('should return the VIN', function () {
+            assert.equal("5YJSA1H16EFP12345", tjs.getVin({"vin": "5YJSA1H16EFP12345"}));
+        });
+        
+		it('should throw with no input', function () {
+            assert.throws( function() {
+				tjs.getVin();
+			});
+        });
+        
+		it('should throw with no vin', function () {
+            assert.throws( function() {
+				tjs.getVin( {} );
+			});
+        });
+    });
+
+    describe('#getShortVin()', function () {
+        it('should return the short VIN', function () {
+            assert.equal("P12345", tjs.getShortVin({"vin": "5YJSA1H16EFP12345"}));
+        });
+        
+		it('should throw with no input', function () {
+            assert.throws( function() {
+				tjs.getShortVin();
+			});
+        });
+        
+		it('should throw with no vin', function () {
+            assert.throws( function() {
+				tjs.getShortVin( {} );
+			});
+        });
+	});
+
 	describe('#login()', function() {
 	    it('should succeed with valid user and pwd', function (done) {
 			tjs.login(user, pass, function(err, result) {
@@ -169,10 +205,13 @@ describe('TeslaJS', function () {
 	});
 
 	describe('#logout()', function () {
-	    it('should return not implemented', function (done) {
+	    it('should succeed', function (done) {
 	        tjs.logout("token", function (err, result) {
-	            assert.equal("Not implemented!", result.response);
-	            done();
+				if (result.response.statusCode == 200) {
+					done();
+				} else {
+					done(err);
+				}
 	        });
 	    });
 
@@ -183,10 +222,10 @@ describe('TeslaJS', function () {
 	});
 
 	describe('#logoutAsync()', function () {
-	    it('should return not implemented', function () {
+	    it('should succeed', function () {
 	        return tjs.logoutAsync("token").then(function (result) {
-	            assert.equal("Not implemented!", result.response);
-	        });
+				assert(result.response.statusCode, 200);
+			});
 	    });
 	});
 
@@ -951,16 +990,6 @@ describe('TeslaJS', function () {
 	describe('#get_command(err_get)', function () {
 	    it('should fail', function (done) {
 	        tjs.get_command(options, "data_request/err_get", function (err, result) {
-	            if (err) {
-	                done();
-	            } else {
-	                done(result.reason);
-	            }
-	        });
-	    });
-
-	    it('should fail', function (done) {
-	        tjs.get_command(options, "err_get", function (err, result) {
 	            if (err) {
 	                done();
 	            } else {
