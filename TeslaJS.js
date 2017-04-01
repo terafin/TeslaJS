@@ -274,11 +274,11 @@ exports.getShortVin = function getShortVin(vehicle) {
 }
 
 /**
- * Login to the server and receive an OAuth token
+ * Login to the server and receive OAuth tokens
  * @param {string} username - Tesla.com username
  * @param {string} password - Tesla.com password
  * @param {nodeBack} callback - Node-style callback
- * @returns {object} {response, body, authToken}
+ * @returns {object} {response, body, authToken, refreshToken}
  */
 exports.login = function login(username, password, callback) {
     log(API_CALL_LEVEL, "TeslaJS.login()");
@@ -307,31 +307,86 @@ exports.login = function login(username, password, callback) {
 
     request(req, function (error, response, body) {
 
-        log(API_RESPONSE_LEVEL, "\nResponse: " + JSON.stringify(body));
+        log(API_RESPONSE_LEVEL, "\nResponse: " + body);
 
-        var authToken;
+        var loginResult;
 
         try {
-            var authdata = JSON.parse(body);
-            authToken = authdata.access_token;
+            loginResult = JSON.parse(body);
         } catch (e) {
             log(API_ERR_LEVEL, 'Error parsing response to oauth token request');
         }
 
-        callback(error, { error: error, response: response, body: body, authToken: authToken });
+        callback(error, { error: error, response: response, body: body, authToken: loginResult.access_token, refreshToken: loginResult.refresh_token });
 
         log(API_RETURN_LEVEL, "TeslaJS.login() completed.");
     });
 }
 
 /**
- * Login to the server and receive an OAuth token
+ * Login to the server and receive OAuth tokens
  * @function loginAsync
  * @param {string} username - Tesla.com username
  * @param {string} password - Tesla.com password
- * @returns {Promise} {response, body, authToken}
+ * @returns {Promise} {response, body, authToken, refreshToken}
  */
 exports.loginAsync = Promise.denodeify(exports.login);
+
+/**
+ * Retrieve new OAuth and refresh tokens using a refresh_token
+ * @param {string} refresh_token - a valid OAuth refresh_token from a previous login
+ * @param {nodeBack} callback - Node-style callback
+ * @returns {object} {response, body, authToken, refreshToken}
+ */
+exports.refreshToken = function refreshToken(refresh_token, callback) {
+    log(API_CALL_LEVEL, "TeslaJS.refreshToken()");
+    
+    callback = callback || function (err, result) { /* do nothing! */ }
+
+    if (!refresh_token) {
+        callback("refreshToken() requires a refresh_token", null);
+        return;
+    } 
+
+    var req = {
+        method: 'POST',
+        url: portalBaseURI + '/oauth/token',
+        gzip: true,
+        form: {
+            "grant_type": "refresh_token",
+            "client_id": c_id,
+            "client_secret": c_sec,
+            "refresh_token": refresh_token
+        }
+    };
+
+    log(API_REQUEST_LEVEL, "\nRequest: " + JSON.stringify(req));
+
+    request(req, function (error, response, body) {
+
+        log(API_RESPONSE_LEVEL, "\nResponse: " + body);
+
+        var loginResult;
+
+        try {
+            loginResult = JSON.parse(body);
+        } catch (e) {
+            log(API_ERR_LEVEL, 'Error parsing response to oauth token request');
+        }
+
+        callback(error, { error: error, response: response, body: body, authToken: loginResult.access_token, refreshToken: loginResult.refresh_token });
+
+        log(API_RETURN_LEVEL, "TeslaJS.refreshToken() completed.");
+    });
+}
+
+/**
+ * Async call to retrieve new OAuth and refresh tokens using a refresh_token
+ * @function refreshTokenAsync
+ * @param {string} refresh_token - a valid OAuth refresh_token from a previous login
+ * @returns {Promise} {response, body, authToken, refreshToken}
+ */
+exports.refreshTokenAsync = Promise.denodeify(exports.refreshToken);
 
 /**
  * Logout and invalidate the current auth token

@@ -1,5 +1,15 @@
 # TeslaJS Change log
 
+## v2.1.26
+* small sample tweaks
+
+## v2.1.25
+* added `refresh_token` property to obj return from `login()` and `refreshToken()`
+
+## v2.1.24
+* added `refreshToken()` and test cases
+* updated samples to save/use full token payload
+
 ## v2.1.23
 * added `getVin()` and `getShortVin()`
 * added test cases

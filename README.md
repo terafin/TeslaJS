@@ -63,14 +63,16 @@ requiring access to passwords.
 
 ## Contributing
 
-Contributions are welcome, particularly bug fixes and enhancements!  Pull 
-Requests will be considered with the following guidelines.
+Contributions are welcome, particularly bug fixes and enhancements!  `Pull 
+Requests` will be considered with the following criteria:
 
 1. Must pass both `npm test` and `wintest` tests
 2. Should meet or exceed current code coverage level
 3. Must respect and align to Project Principles (see above)
 4. Must add general value to the project
-5. Project owners reserve the right to accept or reject any PR for any reason
+5. Must update appropriate documentation
+
+> Project owners reserve the right to accept or reject any PR for any reason
 
 ## Code of Conduct
 
@@ -87,11 +89,10 @@ You can read the complete history of changes in the
 
 Here are some of the more recent features and fixes:
 
-1. In **2.1.19** added gzip support
-2. In **2.1.20** expanded docs
-3. In **2.1.21** expanded test cov and added consts to docs
-4. In **2.1.22** enhanced error handling
-5. In **2.1.23** added `getVin()` and `getShortVin()` methods and test cases
+1. In **2.1.22** enhanced error handling
+2. In **2.1.23** added `getVin()` and `getShortVin()` methods and test cases
+3. In **2.1.24** added `refreshToken()` method and test cases
+4. In **2.1.25** added refreshToken to return obj from `login()` and `refreshToken()`
 
 ## Known Issues
 
@@ -99,20 +100,20 @@ Here are some of the more recent features and fixes:
 AP test and report back?
 2. Calendar support not yet functional.  If someone can share the JSON for a 
 valid calendar request that would help!
-3. Sunroof API was changed by Tesla to limit functionality.  Will be 
+3. Sunroof API was recently changed by Tesla to limit functionality.  Will be 
 addressed in TeslaJS soon.
 
 # Tesla API Documentation
 
 The Tesla REST API encapusulated by this library was documented through the 
 collaboration of many Tesla owners.  Please thank and support them for their 
-efforts.  The current REST API documentation can be found at:
+efforts!  The current REST API documentation can be found at:
 
     http://docs.timdorr.apiary.io/
 
->Note that timdorr has announced plans to migrate the documentation to a new 
->location.  This reference will be updated in the future once that migration 
->is complete.
+> Note that timdorr has announced plans to migrate the documentation to a new 
+> location.  This reference will be updated in the future once that migration 
+> is complete.
 	
 # Warranty Disclaimer
 
@@ -267,6 +268,8 @@ Function | Description
 -------- | -----------
 getLogLevel() | gets the level of debug logging
 setLogLevel() | sets the level of debug logging
+getVin() | return the VIN from the vehicle object
+getShortVin() | return short form VIN from the vehicle object
 getPortalBaseURI() | gets the server URI
 setPortalBaseURI() | sets the server for testing, pass null to reset
 login() | authenticate with Tesla servers and retrieve the OAuth token
@@ -305,6 +308,7 @@ startCharge() | initiates a charging session
 stopCharge() | terminates a charging session
 openChargePort() | opens the charge port
 openTrunk() | open the trunk or frunk
+refreshToken() | retrieve new OAuth token from refresh token
 remoteStart() | enables remote starting of the car
 resetValetPin() | reset the valet pin
 setChargeLimit() | sets the charge limit to a specific amount
@@ -339,6 +343,7 @@ startChargeAsync() | initiates a charging session
 stopChargeAsync() | terminates a charging session
 openChargePortAsync() | opens the charge port
 openTrunkAsync() | open the trunk or frunk
+refreshTokenAsync() | retrieve new OAuth token from refresh token
 remoteStartAsync() | enables remote starting of the car
 resetValetPinAsync() | reset the valet pin
 setChargeLimitAsync() | sets the charge limit to a specific amount
