@@ -1,5 +1,12 @@
 # TeslaJS Change log
 
+## V2.1.18
+* merged PR #78 to add support for `/data` REST endpoint
+* updated 
+
+## V2.1.27
+* fixed crash in setChargeLimit sample
+
 ## v2.1.26
 * small sample tweaks
 

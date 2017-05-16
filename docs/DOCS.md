@@ -130,6 +130,11 @@
 <dt><a href="#post_commandAsync">post_commandAsync(options, command, body)</a> ⇒ <code>Promise</code></dt>
 <dd><p>Generic Async REST call for POST commands</p>
 </dd>
+<dt><a href="#vehicleData">vehicleData(options, callback)</a> ⇒ <code>object</code></dt>
+<dd><p>GET all vehicle data in a single call</p>
+</dd>
+<dt><a href="#vehicleDataAsync">vehicleDataAsync(options)</a> ⇒ <code>Promise</code></dt>
+<dd></dd>
 <dt><a href="#vehicleState">vehicleState(options, callback)</a> ⇒ <code>object</code></dt>
 <dd><p>GET the vehicle state</p>
 </dd>
@@ -723,6 +728,29 @@ Generic Async REST call for POST commands
 | options | <code>[optionsType](#optionsType)</code> | options object |
 | command | <code>string</code> | REST command |
 | body | <code>object</code> | JSON payload |
+
+<a name="vehicleData"></a>
+
+## vehicleData(options, callback) ⇒ <code>object</code>
+GET all vehicle data in a single call
+
+**Kind**: global function  
+**Returns**: <code>object</code> - vehicle_data object  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| options | <code>[optionsType](#optionsType)</code> | options object |
+| callback | <code>[nodeBack](#nodeBack)</code> | Node-style callback |
+
+<a name="vehicleDataAsync"></a>
+
+## vehicleDataAsync(options) ⇒ <code>Promise</code>
+**Kind**: global function  
+**Returns**: <code>Promise</code> - vehicle_data object  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| options | <code>[optionsType](#optionsType)</code> | options object |
 
 <a name="vehicleState"></a>
 
