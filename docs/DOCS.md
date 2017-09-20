@@ -100,22 +100,16 @@
 <dt><a href="#logoutAsync">logoutAsync(authToken)</a> ⇒ <code>Promise</code></dt>
 <dd><p>Logout and invalidate the current auth token</p>
 </dd>
-<dt><a href="#vehicles">vehicles(options, callback)</a> ⇒ <code>Vehicle</code></dt>
-<dd><p>Return vehicle information on the requested vehicle</p>
-</dd>
 <dt><a href="#vehicle">vehicle(options, callback)</a> ⇒ <code>Vehicle</code></dt>
 <dd><p>Return vehicle information on the requested vehicle</p>
 </dd>
 <dt><a href="#vehicleAsync">vehicleAsync(options)</a> ⇒ <code>Promise</code></dt>
 <dd><p>Return vehicle information on the requested vehicle</p>
 </dd>
-<dt><a href="#vehiclesAsync">vehiclesAsync(options)</a> ⇒ <code>Promise</code></dt>
-<dd><p>Return vehicle information on the requested vehicle</p>
-</dd>
-<dt><a href="#allVehicles">allVehicles(options, callback)</a> ⇒ <code>Array.&lt;Vehicles&gt;</code></dt>
+<dt><a href="#vehicles">vehicles(options, callback)</a> ⇒ <code>Array.&lt;Vehicles&gt;</code></dt>
 <dd><p>Return vehicle information on ALL vehicles</p>
 </dd>
-<dt><a href="#allVehiclesAsync">allVehiclesAsync(options, callback)</a> ⇒ <code>Promise</code></dt>
+<dt><a href="#vehiclesAsync">vehiclesAsync(options, callback)</a> ⇒ <code>Promise</code></dt>
 <dd><p>Return vehicle information on ALL vehicles</p>
 </dd>
 <dt><a href="#get_command">get_command(options, command, callback)</a></dt>
@@ -599,19 +593,6 @@ Logout and invalidate the current auth token
 | --- | --- | --- |
 | authToken | <code>string</code> | Tesla provided OAuth token |
 
-<a name="vehicles"></a>
-
-## vehicles(options, callback) ⇒ <code>Vehicle</code>
-Return vehicle information on the requested vehicle
-
-**Kind**: global function  
-**Returns**: <code>Vehicle</code> - vehicle JSON data  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| options | <code>[optionsType](#optionsType)</code> | options object |
-| callback | <code>[nodeBack](#nodeBack)</code> | Node-style callback |
-
 <a name="vehicle"></a>
 
 ## vehicle(options, callback) ⇒ <code>Vehicle</code>
@@ -637,21 +618,9 @@ Return vehicle information on the requested vehicle
 | --- | --- | --- |
 | options | <code>[optionsType](#optionsType)</code> | options object |
 
-<a name="vehiclesAsync"></a>
+<a name="vehicles"></a>
 
-## vehiclesAsync(options) ⇒ <code>Promise</code>
-Return vehicle information on the requested vehicle
-
-**Kind**: global function  
-**Returns**: <code>Promise</code> - vehicle JSON data  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| options | <code>[optionsType](#optionsType)</code> | options object |
-
-<a name="allVehicles"></a>
-
-## allVehicles(options, callback) ⇒ <code>Array.&lt;Vehicles&gt;</code>
+## vehicles(options, callback) ⇒ <code>Array.&lt;Vehicles&gt;</code>
 Return vehicle information on ALL vehicles
 
 **Kind**: global function  
@@ -662,9 +631,9 @@ Return vehicle information on ALL vehicles
 | options | <code>[optionsType](#optionsType)</code> | options object |
 | callback | <code>[nodeBack](#nodeBack)</code> | Node-style callback |
 
-<a name="allVehiclesAsync"></a>
+<a name="vehiclesAsync"></a>
 
-## allVehiclesAsync(options, callback) ⇒ <code>Promise</code>
+## vehiclesAsync(options, callback) ⇒ <code>Promise</code>
 Return vehicle information on ALL vehicles
 
 **Kind**: global function  
