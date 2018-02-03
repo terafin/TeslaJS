@@ -11,7 +11,7 @@
  * Refer to included LICENSE file for usage rights and restrictions
  */
 
-'use strict';
+'use strict'
 
 var request = require('request')
 var Promise = require('promise')
@@ -23,7 +23,7 @@ var Promise = require('promise')
  * @global 
  * @default
  */
-var streamingPortal = 'https://streaming.vn.teslamotors.com/stream';
+var streamingPortal = 'https://streaming.vn.teslamotors.com/stream'
 exports.streamingPortal = streamingPortal
 
 var streamingBaseURI = process.env.TESLAJS_STREAMING || streamingPortal
@@ -35,7 +35,7 @@ var streamingBaseURI = process.env.TESLAJS_STREAMING || streamingPortal
  * @global   
  * @default  
  */
-var portal = 'https://owner-api.teslamotors.com';
+var portal = 'https://owner-api.teslamotors.com'
 exports.portal = portal
 
 var portalBaseURI = process.env.TESLAJS_SERVER || portal
@@ -207,12 +207,12 @@ exports.getStreamingBaseURI = function getStreamingBaseURI() {
  * @return {string} vehicle model string
  */
 exports.getModel = function getModel(vehicle) {
-    var carType = 'Unknown';
+    var carType = 'Unknown'
 
     if (vehicle.option_codes.indexOf('MDLX') != -1) {
-        carType = 'Model X';
+        carType = 'Model X'
     } else {
-        carType = 'Model S';
+        carType = 'Model S'
     }
 
     return carType
@@ -244,7 +244,7 @@ exports.getPaintColor = function getPaintColor(vehicle) {
 
     var paintColor = vehicle.option_codes.match(/PBCW|PBSB|PMAB|PMBL|PMMB|PMMR|PPMR|PMNG|PMSG|PMSS|PPSB|PPSR|PPSW|PPTI|PMTG/)
 
-    return colors[paintColor] || 'black';
+    return colors[paintColor] || 'black'
 }
 
 /**
@@ -287,7 +287,7 @@ exports.login = function login(username, password, callback) {
 
     if (!username || !password) {
         callback('login() requires username and password', null)
-        return;
+        return
     } 
 
     var req = {
@@ -345,7 +345,7 @@ exports.refreshToken = function refreshToken(refresh_token, callback) {
 
     if (!refresh_token) {
         callback('refreshToken() requires a refresh_token', null)
-        return;
+        return
     } 
 
     var req = {
@@ -616,10 +616,18 @@ function get_command(options, command, callback) {
 
     callback = callback || function (err, data) { /* do nothing! */ }
 
+    var url = portalBaseURI + '/api/1/vehicles/' + options.vehicleID + '/' + command
+    if ( options.apiBaseURL !== undefined && options.apiBaseURL !== null ) {
+        if ( options.apiItemID.toString().length <= 2 )
+            url = portalBaseURI + options.apiBaseURL + command
+        else
+            url = portalBaseURI + options.apiBaseURL + options.apiItemID + '/' + command
+    }
+
     var req = {
         method: 'GET',
         gzip: true,
-        url: portalBaseURI + '/api/1/vehicles/' + options.vehicleID + '/' + command,
+        url: url,
         headers: { Authorization: 'Bearer ' + options.authToken, 'Content-Type': 'application/json; charset=utf-8'}
     }
 
@@ -679,12 +687,25 @@ function post_command(options, command, body, callback) {
 
     callback = callback || function (err, data) { /* do nothing! */ }
 
+    var url = portalBaseURI + '/api/1/vehicles/' + options.vehicleID + '/' + command
+    if ( options.apiBaseURL !== undefined && options.apiBaseURL !== null ) {
+        url = portalBaseURI + options.apiBaseURL + options.apiItemID + '/' + command
+    }
+
     var cmd = {
         method: 'POST',
-        url: portalBaseURI + '/api/1/vehicles/' + options.vehicleID + '/' + command,
+        url: url,
         gzip: true,
-        headers: { Authorization: 'Bearer ' + options.authToken, 'content-type': 'application/json; charset=UTF-8' },
-        form: body || null
+        headers: { 
+            'content-type': 'application/json; charset=utf-8',
+            'x-tesla-user-agent': 'TeslaApp/3.3.0-339/68bf3eec4/ios/11.3',
+            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E178',
+            'Authorization': 'Bearer ' + options.authToken, 
+            'Accept-Encoding': 'br, gzip, deflate',
+            'Accept': '*/*',
+            'Accept-Language': 'en-us',
+         },
+        body: JSON.stringify(body) || null
     }
 
     log(API_REQUEST_LEVEL, '\nRequest: ' + JSON.stringify(cmd))
@@ -698,6 +719,7 @@ function post_command(options, command, body, callback) {
         if (response.statusCode != 200) {
             var str = 'Error response: ' + response.statusCode
             log(API_ERR_LEVEL, str)
+            log(API_ERR_LEVEL, response.body)
             return callback(str, null)
         }
 
@@ -774,6 +796,61 @@ exports.vehicleConfigAsync = Promise.denodeify(exports.vehicleConfig)
  */
 exports.vehicleState = function vehicleState(options, callback) {
     get_command(options, 'data_request/vehicle_state', callback)
+}
+
+/**
+ * GET the vehicle state
+ * @param {optionsType} options - options object
+ * @param {nodeBack} callback - Node-style callback
+ * @returns {object} vehicle_state object
+ */
+exports.batteryState = function batteryState(options, callback) {
+    options.apiBaseURL = '/api/1/powerwalls/'
+    options.apiItemID = options.batteryID
+    get_command(options, 'status', callback)
+}
+
+exports.siteInfo = function siteInfo(options, callback) {
+    options.apiBaseURL = '/api/1/energy_sites/'
+    options.apiItemID = options.siteID
+    get_command(options, 'site_info', callback)
+}
+
+exports.siteStatus = function siteStatus(options, callback) {
+    options.apiBaseURL = '/api/1/energy_sites/'
+    options.apiItemID = options.siteID
+    get_command(options, 'live_status', callback)
+}
+
+exports.setSiteMode = function setSiteMode(options, mode, callback) {
+    if ( mode !== 'self_consumption' && mode !== 'backup' ) {
+        callback('bad mode: ' + mode, null)
+        return
+    }
+    options.apiBaseURL = '/api/1/energy_sites/'
+    options.apiItemID = options.siteID
+    post_command(options, 'operation', { default_real_mode : mode }, callback)
+}
+
+exports.setSiteReservePercent = function setSiteReservePercent(options, reservePercent, callback) {
+    if ( reservePercent < 1 || reservePercent > 100 ) {
+        callback('bad reserve percent', null)
+        return
+    }
+    options.apiBaseURL = '/api/1/energy_sites/'
+    options.apiItemID = options.siteID
+
+    const body = { 
+        'backup_reserve_percent': reservePercent, 
+    }
+
+    post_command(options, 'backup', body, callback)
+}
+
+exports.batteries = function batteries(options, callback) {
+    options.apiBaseURL = '/api/1/powerwalls'
+    options.apiItemID = ''
+    get_command(options, '', callback)
 }
 
 /**
@@ -1131,12 +1208,12 @@ exports.climateStopAsync = Promise.denodeify(exports.climateStop)
  * @global   
  * @default  
  */
-exports.SUNROOF_VENT = 'vent';
+exports.SUNROOF_VENT = 'vent'
 /**   
  * @global   
  * @default  
  */
-exports.SUNROOF_CLOSED = 'close';
+exports.SUNROOF_CLOSED = 'close'
 
 /**
  * Set sun roof mode
@@ -1247,12 +1324,12 @@ exports.remoteStartAsync = Promise.denodeify(exports.remoteStart)
  * @global   
  * @default  
  */
-exports.FRUNK = 'frunk';
+exports.FRUNK = 'frunk'
 /**   
  * @global   
  * @default  
  */
-exports.TRUNK = 'trunk';
+exports.TRUNK = 'trunk'
 
 /**
  * Open the trunk/frunk
