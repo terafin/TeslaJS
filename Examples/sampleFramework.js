@@ -70,6 +70,7 @@ exports.SampleFramework = function SampleFramework(program, main) {
         try {
             this.tokenFound = fs.statSync('.token').isFile()
         } catch (e) {
+            console.error('exception: ' + e)
         }
 
         if (program.uri) {
