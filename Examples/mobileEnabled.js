@@ -7,11 +7,11 @@
 //
 // Refer to included LICENSE file for usage rights and restrictions
 //=====================================================================
-"use strict";
+'use strict'
 
-require('colors');
-var program = require('commander');
-var framework = require('./sampleFramework.js');
+require('colors')
+var program = require('commander')
+var framework = require('./sampleFramework.js')
 
 //
 //
@@ -21,27 +21,27 @@ program
   .option('-p, --password [string]', 'password (needed only if token not cached)')
   .option('-i, --index <n>', 'vehicle index (first car by default)', parseInt)
   .option('-U, --uri [string]', 'URI of test server (e.g. http://127.0.0.1:3000)')
-  .parse(process.argv);
+  .parse(process.argv)
 
 //
-var sample = new framework.SampleFramework(program, sampleMain);
-sample.run();
+var sample = new framework.SampleFramework(program, sampleMain)
+sample.run()
 
 //
 //
 //
 function sampleMain(tjs, options) {
     tjs.mobileEnabled(options, function (err, result) {
-        if (!result) {
-            console.error("\nError: " + "No response to mobileEnabled() query!".red);
-            return;
+        if (result == null && result == undefined) {
+            console.error('\nError: ' + 'No response to mobileEnabled() query!'.red)
+            return
         }
 
-        var str = "DISABLED".red;
+        var str = 'DISABLED'.red
         if (result) {
-            str = "ENABLED".green;
+            str = 'ENABLED'.green
         }
 
-        console.log("\nMobile access is: " + str);
-    });
+        console.log('\nMobile access is: ' + str)
+    })
 }

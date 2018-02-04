@@ -207,7 +207,7 @@ exports.getStreamingBaseURI = function getStreamingBaseURI() {
  * @return {string} vehicle model string
  */
 exports.getModel = function getModel(vehicle) {
-    var carType = 'Unknown'
+    var carType
 
     if (vehicle.option_codes.indexOf('MDLX') != -1) {
         carType = 'Model X'
