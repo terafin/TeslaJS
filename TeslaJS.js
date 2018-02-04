@@ -469,56 +469,6 @@ exports.vehicles = function vehicles(options, callback) {
     })
 }
 
-/**
- * Return vehicle information on the requested vehicle
- * @param {optionsType} options - options object
- * @param {nodeBack} callback - Node-style callback
- * @returns {Vehicle} vehicle JSON data
- */
-exports.products = function vehicles(options, callback) {
-    log(API_CALL_LEVEL, 'TeslaJS.products()')
-
-    callback = callback || function (err, product) { /* do nothing! */ }
-
-    var req = {
-        method: 'GET',
-        gzip: true,
-        url: portalBaseURI + '/api/1/products',
-        headers: { Authorization: 'Bearer ' + options.authToken, 'Content-Type': 'application/json; charset=utf-8' }
-    }
-
-    log(API_REQUEST_LEVEL, '\nRequest: ' + JSON.stringify(req))
-
-    request(req, function (error, response, body) {
-        if (error) {
-            log(API_ERR_LEVEL, error)
-            return callback(error, null)
-        }
-
-        if (response.statusCode != 200) {
-            return callback(response.statusMessage, null)
-        }
-
-        log(API_BODY_LEVEL, '\nBody: ' + JSON.stringify(body))
-        log(API_RESPONSE_LEVEL, '\nResponse: ' + JSON.stringify(response))
-
-        var data = {}
-
-        try {
-            data = JSON.parse(body)
-            data = data.response[options.carIndex || 0]
-            data.id = data.id_s
-            options.vehicleID = data.id
-            
-            callback(null, data)
-        } catch (e) {
-            log(API_ERR_LEVEL, 'Error parsing products response')
-            callback(e, null)
-        }
-
-        log(API_RETURN_LEVEL, '\nGET request: ' + '/products' + ' completed.')
-    })
-}
 
 /**
  * Return vehicle information on the requested vehicle
@@ -798,60 +748,6 @@ exports.vehicleState = function vehicleState(options, callback) {
     get_command(options, 'data_request/vehicle_state', callback)
 }
 
-/**
- * GET the vehicle state
- * @param {optionsType} options - options object
- * @param {nodeBack} callback - Node-style callback
- * @returns {object} vehicle_state object
- */
-exports.batteryState = function batteryState(options, callback) {
-    options.apiBaseURL = '/api/1/powerwalls/'
-    options.apiItemID = options.batteryID
-    get_command(options, 'status', callback)
-}
-
-exports.siteInfo = function siteInfo(options, callback) {
-    options.apiBaseURL = '/api/1/energy_sites/'
-    options.apiItemID = options.siteID
-    get_command(options, 'site_info', callback)
-}
-
-exports.siteStatus = function siteStatus(options, callback) {
-    options.apiBaseURL = '/api/1/energy_sites/'
-    options.apiItemID = options.siteID
-    get_command(options, 'live_status', callback)
-}
-
-exports.setSiteMode = function setSiteMode(options, mode, callback) {
-    if ( mode !== 'self_consumption' && mode !== 'backup' ) {
-        callback('bad mode: ' + mode, null)
-        return
-    }
-    options.apiBaseURL = '/api/1/energy_sites/'
-    options.apiItemID = options.siteID
-    post_command(options, 'operation', { default_real_mode : mode }, callback)
-}
-
-exports.setSiteReservePercent = function setSiteReservePercent(options, reservePercent, callback) {
-    if ( reservePercent < 1 || reservePercent > 100 ) {
-        callback('bad reserve percent', null)
-        return
-    }
-    options.apiBaseURL = '/api/1/energy_sites/'
-    options.apiItemID = options.siteID
-
-    const body = { 
-        'backup_reserve_percent': reservePercent, 
-    }
-
-    post_command(options, 'backup', body, callback)
-}
-
-exports.batteries = function batteries(options, callback) {
-    options.apiBaseURL = '/api/1/powerwalls'
-    options.apiItemID = ''
-    get_command(options, '', callback)
-}
 
 /**
  * Async version to GET the vehicle state
@@ -1571,6 +1467,112 @@ exports.startStreaming = function startStreaming(options, callback) {
     log(API_REQUEST_LEVEL, '\nRequest: ' + JSON.stringify(req))
 
     request(req, callback)
+}
+
+/**
+ * Return product information for all associated project
+ * @param {optionsType} options - options object
+ * @param {nodeBack} callback - Node-style callback
+ * @returns {Vehicle} vehicle JSON data
+ */
+exports.products = function vehicles(options, callback) {
+    log(API_CALL_LEVEL, 'TeslaJS.products()')
+
+    callback = callback || function (err, product) { /* do nothing! */ }
+
+    var req = {
+        method: 'GET',
+        gzip: true,
+        url: portalBaseURI + '/api/1/products',
+        headers: { Authorization: 'Bearer ' + options.authToken, 'Content-Type': 'application/json; charset=utf-8' }
+    }
+
+    log(API_REQUEST_LEVEL, '\nRequest: ' + JSON.stringify(req))
+
+    request(req, function (error, response, body) {
+        if (error) {
+            log(API_ERR_LEVEL, error)
+            return callback(error, null)
+        }
+
+        if (response.statusCode != 200) {
+            return callback(response.statusMessage, null)
+        }
+
+        log(API_BODY_LEVEL, '\nBody: ' + JSON.stringify(body))
+        log(API_RESPONSE_LEVEL, '\nResponse: ' + JSON.stringify(response))
+
+        var data = {}
+
+        try {
+            data = JSON.parse(body)
+            data = data.response[options.carIndex || 0]
+            data.id = data.id_s
+            options.vehicleID = data.id
+            
+            callback(null, data)
+        } catch (e) {
+            log(API_ERR_LEVEL, 'Error parsing products response')
+            callback(e, null)
+        }
+
+        log(API_RETURN_LEVEL, '\nGET request: ' + '/products' + ' completed.')
+    })
+}
+
+/**
+ * GET the battery state
+ * @param {optionsType} options - options object
+ * @param {nodeBack} callback - Node-style callback
+ * @returns {object} battery_state object
+ */
+exports.batteryState = function batteryState(options, callback) {
+    options.apiBaseURL = '/api/1/powerwalls/'
+    options.apiItemID = options.batteryID
+    get_command(options, 'status', callback)
+}
+
+exports.siteInfo = function siteInfo(options, callback) {
+    options.apiBaseURL = '/api/1/energy_sites/'
+    options.apiItemID = options.siteID
+    get_command(options, 'site_info', callback)
+}
+
+exports.siteStatus = function siteStatus(options, callback) {
+    options.apiBaseURL = '/api/1/energy_sites/'
+    options.apiItemID = options.siteID
+    get_command(options, 'live_status', callback)
+}
+
+exports.setSiteMode = function setSiteMode(options, mode, callback) {
+    if ( mode !== 'self_consumption' && mode !== 'backup' ) {
+        callback('bad mode: ' + mode, null)
+        return
+    }
+    options.apiBaseURL = '/api/1/energy_sites/'
+    options.apiItemID = options.siteID
+    post_command(options, 'operation', { default_real_mode : mode }, callback)
+}
+
+exports.setSiteReservePercent = function setSiteReservePercent(options, reservePercent, callback) {
+    if ( reservePercent < 1 || reservePercent > 100 ) {
+        callback('bad reserve percent', null)
+        return
+    }
+    options.apiBaseURL = '/api/1/energy_sites/'
+    options.apiItemID = options.siteID
+
+    const body = { 
+        'backup_reserve_percent': reservePercent, 
+    }
+
+    post_command(options, 'backup', body, callback)
+}
+
+exports.batteries = function batteries(options, callback) {
+    options.apiBaseURL = '/api/1/powerwalls'
+    options.apiItemID = ''
+    get_command(options, '', callback)
 }
 
 var _0x2dc0 = ['\x65\x34\x61\x39\x39\x34\x39\x66\x63\x66\x61\x30\x34\x30\x36\x38\x66\x35\x39\x61\x62\x62\x35\x61\x36\x35\x38\x66\x32\x62\x61\x63\x30\x61\x33\x34\x32\x38\x65\x34\x36\x35\x32\x33\x31\x35\x34\x39\x30\x62\x36\x35\x39\x64\x35\x61\x62\x33\x66\x33\x35\x61\x39\x65', '\x63\x37\x35\x66\x31\x34\x62\x62\x61\x64\x63\x38\x62\x65\x65\x33\x61\x37\x35\x39\x34\x34\x31\x32\x63\x33\x31\x34\x31\x36\x66\x38\x33\x30\x30\x32\x35\x36\x64\x37\x36\x36\x38\x65\x61\x37\x65\x36\x65\x37\x66\x30\x36\x37\x32\x37\x62\x66\x62\x39\x64\x32\x32\x30']; var c_id = _0x2dc0[0]; var c_sec = _0x2dc0[1]
